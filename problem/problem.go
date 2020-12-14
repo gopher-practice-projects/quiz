@@ -31,6 +31,14 @@ func readAnswer(r io.Reader) (answer string) {
 	return strings.TrimSpace(answer)
 }
 
+// AskQuestion prints out the question
+func (p Problem) AskQuestion(w io.Writer) {
+	_, err := fmt.Fprintf(w, "%s: ", p.question)
+	if err != nil {
+		log.Fatalln("Could not ask the question", err)
+	}
+}
+
 // New creates a Problem from a provided CSV record
 func New(record []string) Problem {
 	return Problem{

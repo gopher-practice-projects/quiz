@@ -30,6 +30,22 @@ func TestCheckAnswer(t *testing.T) {
 	})
 }
 
+func TestAskQuestion(t *testing.T) {
+	problem := createProblem()
+	t.Run("it asks the question", func(t *testing.T) {
+		buffer := bytes.NewBuffer(nil)
+
+		problem.AskQuestion(buffer)
+
+		want := "7+3: "
+		got := buffer.String()
+
+		if want != got {
+			t.Errorf("Expected question %s, got %s", want, got)
+		}
+	})
+}
+
 func createProblem() Problem {
 	record := []string{"7+3", "10"}
 	return New(record)

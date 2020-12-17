@@ -1,6 +1,14 @@
 package main
 
-import "flag"
+import (
+	"encoding/csv"
+	"flag"
+	"io"
+	"log"
+
+	"github.com/gopher-practice-projects/quiz/problem"
+	"github.com/gopher-practice-projects/quiz/quiz"
+)
 
 const (
 	// FileFlag is used to set a file for the question
@@ -34,6 +42,23 @@ func (q *quizFlagger) IntVar(p *int, name string, value int, usage string) {
 	flag.IntVar(p, name, value, usage)
 }
 
+// ReadCSV parses the CSV file into a Problem structure
+func ReadCSV(reader io.Reader) quiz.Quiz {
+	csvReader := csv.NewReader(reader)
+
+	problems := []problem.Problem{}
+	for {
+		record, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatalln("Error reading CSV: ", err)
+		}
+		problems = append(problems, problem.New(record))
+	}
+	return quiz.New(problems)
+}
+
 // TimerSeconds is the amount of time allowed for the quiz
 var TimerSeconds int
 var file string
@@ -50,4 +75,11 @@ func init() {
 	ConfigFlags(flagger)
 
 	flag.Parse()
+}
+
+func main() {
+	// csvFile, err = os.Open(file)
+	// if err != nil {
+	// 	log.Fatalln("Could not open file: ", err)
+	// }
 }

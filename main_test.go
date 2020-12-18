@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
+
+	"github.com/gopher-practice-projects/quiz/problem"
+	"github.com/gopher-practice-projects/quiz/quiz"
 )
 
 type flaggerMock struct {
@@ -28,7 +32,26 @@ func (f *flaggerMock) IntVar(p *int, name string, value int, usage string) {
 	f.varUsages = append(f.varUsages, usage)
 }
 
-func TestConfigFlag(t *testing.T) {
+func TestReadCSV(t *testing.T) {
+	input := "7+3,10\n1+1,2"
+	reader := bytes.NewBufferString(input)
+
+	record1 := []string{"7+3", "10"}
+	record2 := []string{"1+1", "2"}
+	problems := []problem.Problem{
+		problem.New(record1),
+		problem.New(record2),
+	}
+
+	want := quiz.New(problems)
+	got := ReadCSV(reader)
+
+	if !reflect.DeepEqual(want, got) {
+		t.Errorf("it should read in %v got %v", want, got)
+	}
+}
+
+func TestConfigFlags(t *testing.T) {
 	flagger := &flaggerMock{}
 
 	ConfigFlags(flagger)

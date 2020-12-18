@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/csv"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gopher-practice-projects/quiz/problem"
 	"github.com/gopher-practice-projects/quiz/quiz"
@@ -43,6 +45,17 @@ func (q *quizFlagger) IntVar(p *int, name string, value int, usage string) {
 	flag.IntVar(p, name, value, usage)
 }
 
+type quizTimer struct{}
+
+func (q quizTimer) NewTimer(d time.Duration) *time.Timer {
+	return time.NewTimer(d)
+}
+
+// Timer is used to start a timer
+type Timer interface {
+	NewTimer(d time.Duration) *time.Timer
+}
+
 // ReadCSV parses the CSV file into a Problem structure
 func ReadCSV(reader io.Reader) quiz.Quiz {
 	csvReader := csv.NewReader(reader)
@@ -70,6 +83,14 @@ func ConfigFlags(f Flagger) {
 	f.IntVar(&TimerSeconds, TimerFlag, TimerFlagValue, TimerFlagUsage)
 }
 
+// StartTimer begins a timer once the user provides input
+func StartTimer(w io.Writer, r io.Reader, timer Timer) *time.Timer {
+	fmt.Fprint(w, "Ready to start?")
+	fmt.Fscanln(r)
+
+	return timer.NewTimer(time.Second * time.Duration(TimerSeconds))
+}
+
 func init() {
 	flagger := &quizFlagger{}
 
@@ -85,6 +106,15 @@ func main() {
 	}
 
 	quiz := ReadCSV(csvFile)
+
+	timer := StartTimer(os.Stdout, os.Stdin, quizTimer{})
+
+	go func() {
+		<-timer.C
+		fmt.Println("")
+		quiz.PrintResults(os.Stdout)
+		os.Exit(0)
+	}()
 
 	quiz.Run(os.Stdout, os.Stdin)
 }

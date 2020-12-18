@@ -5,6 +5,7 @@ import (
 	"flag"
 	"io"
 	"log"
+	"os"
 
 	"github.com/gopher-practice-projects/quiz/problem"
 	"github.com/gopher-practice-projects/quiz/quiz"
@@ -78,8 +79,12 @@ func init() {
 }
 
 func main() {
-	// csvFile, err = os.Open(file)
-	// if err != nil {
-	// 	log.Fatalln("Could not open file: ", err)
-	// }
+	csvFile, err := os.Open(file)
+	if err != nil {
+		log.Fatalln("Could not open file: ", err)
+	}
+
+	quiz := ReadCSV(csvFile)
+
+	quiz.Run(os.Stdout, os.Stdin)
 }

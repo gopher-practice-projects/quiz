@@ -45,15 +45,15 @@ func (q *quizFlagger) IntVar(p *int, name string, value int, usage string) {
 	flag.IntVar(p, name, value, usage)
 }
 
+// Timer is used to start a timer
+type Timer interface {
+	NewTimer(d time.Duration) *time.Timer
+}
+
 type quizTimer struct{}
 
 func (q quizTimer) NewTimer(d time.Duration) *time.Timer {
 	return time.NewTimer(d)
-}
-
-// Timer is used to start a timer
-type Timer interface {
-	NewTimer(d time.Duration) *time.Timer
 }
 
 // ReadCSV parses the CSV file into a Problem structure
@@ -68,8 +68,10 @@ func ReadCSV(reader io.Reader) quiz.Quiz {
 		} else if err != nil {
 			log.Fatalln("Error reading CSV: ", err)
 		}
+
 		problems = append(problems, problem.New(record))
 	}
+
 	return quiz.New(problems)
 }
 
@@ -93,7 +95,6 @@ func StartTimer(w io.Writer, r io.Reader, timer Timer) *time.Timer {
 
 func init() {
 	flagger := &quizFlagger{}
-
 	ConfigFlags(flagger)
 
 	flag.Parse()
@@ -108,7 +109,6 @@ func main() {
 	quiz := ReadCSV(csvFile)
 
 	timer := StartTimer(os.Stdout, os.Stdin, quizTimer{})
-
 	go func() {
 		<-timer.C
 		fmt.Println("")
